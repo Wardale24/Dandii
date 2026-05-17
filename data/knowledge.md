@@ -13,7 +13,7 @@
 [List and describe the main research areas.]
 
 ## People
-[Names, roles, and relevant info about unit members.]
+Alex is the Data Manager and Bioinformatics lead of the unit.
 
 ## Publications & Projects
 [Key publications, ongoing projects, collaborations.]
