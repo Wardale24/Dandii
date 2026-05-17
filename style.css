@@ -1,9 +1,10 @@
 :root {
-  --color-bg: #050a0e;
-  --color-text: #c8fff4;
-  --color-glow: #00f5d4;
-  --color-muted: rgba(200, 255, 244, 0.42);
-  --font-terminal: "Share Tech Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-bg: #050705;
+  --color-bg-soft: #0a0f08;
+  --color-text: #b4ca9a;
+  --color-glow: #9db77b;
+  --color-muted: rgba(180, 202, 154, 0.38);
+  --font-terminal: "VT323", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 * {
@@ -31,26 +32,54 @@ body {
   place-items: center;
   padding: 8vw;
   background:
-    radial-gradient(circle at 50% 45%, rgba(0, 245, 212, 0.055), transparent 34rem),
-    radial-gradient(circle at 18% 20%, rgba(114, 9, 183, 0.08), transparent 26rem),
-    radial-gradient(circle at 82% 72%, rgba(0, 245, 212, 0.035), transparent 24rem),
-    #050a0e;
+    radial-gradient(circle at 50% 45%, rgba(157, 183, 123, 0.08), transparent 34rem),
+    radial-gradient(circle at 18% 20%, rgba(180, 202, 154, 0.05), transparent 26rem),
+    radial-gradient(circle at 82% 72%, rgba(157, 183, 123, 0.045), transparent 24rem),
+    linear-gradient(180deg, var(--color-bg-soft), var(--color-bg));
+}
+
+.stage::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(180, 202, 154, 0.025) 0,
+      rgba(180, 202, 154, 0.025) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  opacity: 0.42;
+}
+
+.stage::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, transparent 38%, rgba(0, 0, 0, 0.38) 100%);
 }
 
 .center-text {
-  max-width: min(920px, 88vw);
+  position: relative;
+  z-index: 2;
+  max-width: min(980px, 88vw);
   max-height: 78vh;
   overflow: hidden;
   text-align: center;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-size: clamp(1.35rem, 4.2vw, 4.8rem);
-  line-height: 1.16;
-  letter-spacing: 0.03em;
+  font-size: clamp(2.2rem, 6vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: 0.035em;
   color: var(--color-text);
   text-shadow:
-    0 0 10px rgba(0, 245, 212, 0.36),
-    0 0 34px rgba(0, 245, 212, 0.16);
+    0 0 8px rgba(180, 202, 154, 0.42),
+    0 0 26px rgba(157, 183, 123, 0.2),
+    0 0 54px rgba(157, 183, 123, 0.12);
   opacity: 0;
   transform: translateY(8px);
   transition:
@@ -68,19 +97,22 @@ body {
 .center-text.waiting {
   color: var(--color-muted);
   text-shadow:
-    0 0 8px rgba(0, 245, 212, 0.18),
-    0 0 24px rgba(0, 245, 212, 0.08);
+    0 0 8px rgba(180, 202, 154, 0.18),
+    0 0 24px rgba(157, 183, 123, 0.08);
   animation: waitingPulse 1.2s ease-in-out infinite;
 }
 
 .center-text.answer {
-  font-size: clamp(1.05rem, 2.6vw, 2.8rem);
-  line-height: 1.28;
+  font-size: clamp(1.7rem, 4.1vw, 4.6rem);
+  line-height: 1.02;
 }
 
 .cursor {
   display: inline-block;
   color: var(--color-glow);
+  text-shadow:
+    0 0 8px rgba(157, 183, 123, 0.72),
+    0 0 24px rgba(157, 183, 123, 0.32);
   animation: cursorBlink 0.82s steps(2, start) infinite;
 }
 
@@ -114,11 +146,11 @@ body {
 
   .center-text {
     max-width: 92vw;
-    font-size: clamp(1.25rem, 8vw, 3.2rem);
+    font-size: clamp(2rem, 10vw, 4.2rem);
   }
 
   .center-text.answer {
-    font-size: clamp(1rem, 5.8vw, 2.2rem);
+    font-size: clamp(1.45rem, 7vw, 3.1rem);
   }
 }
 
