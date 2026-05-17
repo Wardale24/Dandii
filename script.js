@@ -1,10 +1,10 @@
 const DANDII_OFFLINE_MESSAGE = "Dandii is offline. Please try again.";
-const EMPTY_KNOWLEDGE_MESSAGE =
-  "I don't have information about that in my current knowledge base. Please contact the Biological Design Unit directly.";
 
 const state = {
   currentQuestion: "",
+  lastAnswer: "",
   isWaiting: false,
+  isTypingAnswer: false,
   maxCharacters: 1200,
   typewriterTimer: null
 };
@@ -12,16 +12,8 @@ const state = {
 const elements = {};
 
 document.addEventListener("DOMContentLoaded", () => {
-  elements.chatWindow = document.getElementById("chat-window");
-  elements.ghostInput = document.getElementById("ghost-input");
-  elements.queryText = document.getElementById("query-text");
-
-  renderGhostInput();
-
-  addMessage(
-    "assistant",
-    "DANDII online.\nType anywhere on the page, then press ENTER to query the Biological Design Unit knowledge base."
-  );
+  elements.centerText = document.getElementById("center-text");
+  renderBlank();
 
   window.addEventListener("keydown", handleGlobalKeydown);
 });
@@ -31,9 +23,18 @@ function handleGlobalKeydown(event) {
     return;
   }
 
+  if (event.ctrlKey || event.metaKey || event.altKey) {
+    return;
+  }
+
+  if (state.isWaiting || state.isTypingAnswer) {
+    event.preventDefault();
+    return;
+  }
+
   if (event.key === "Escape") {
     event.preventDefault();
-    clearGhostInput();
+    clearEverything();
     return;
   }
 
@@ -42,7 +43,9 @@ function handleGlobalKeydown(event) {
 
     if (state.currentQuestion.length > 0) {
       state.currentQuestion = state.currentQuestion.slice(0, -1);
-      renderGhostInput();
+      renderQuestion();
+    } else {
+      renderBlank();
     }
 
     return;
@@ -50,34 +53,26 @@ function handleGlobalKeydown(event) {
 
   if (event.key === "Enter") {
     event.preventDefault();
-
-    if (state.isWaiting) {
-      flashGhostInput();
-      return;
-    }
-
     submitCurrentQuestion();
-    return;
-  }
-
-  if (state.isWaiting) {
     return;
   }
 
   if (event.key.length === 1 && state.currentQuestion.length < state.maxCharacters) {
     event.preventDefault();
+
+    if (state.lastAnswer) {
+      state.lastAnswer = "";
+      state.currentQuestion = "";
+    }
+
     state.currentQuestion += event.key;
-    renderGhostInput();
+    renderQuestion();
   }
 }
 
 function shouldIgnoreKeydown(event) {
   const target = event.target;
   const tagName = target?.tagName?.toLowerCase();
-
-  if (event.ctrlKey || event.metaKey || event.altKey) {
-    return true;
-  }
 
   if (target?.isContentEditable) {
     return true;
@@ -86,57 +81,67 @@ function shouldIgnoreKeydown(event) {
   return tagName === "input" || tagName === "textarea" || tagName === "select";
 }
 
-function renderGhostInput() {
-  const hasText = state.currentQuestion.length > 0;
-
-  elements.queryText.textContent = hasText
-    ? state.currentQuestion
-    : "TYPE ANYWHERE TO QUERY BIOLOGICAL DESIGN UNIT";
-
-  elements.ghostInput.classList.toggle("active", hasText);
+function renderBlank() {
+  elements.centerText.className = "center-text";
+  elements.centerText.textContent = "";
 }
 
-function clearGhostInput() {
+function renderQuestion() {
+  if (!state.currentQuestion) {
+    renderBlank();
+    return;
+  }
+
+  elements.centerText.className = "center-text visible";
+  elements.centerText.innerHTML = `${escapeHtml(state.currentQuestion)}<span class="cursor">_</span>`;
+}
+
+function renderWaiting(question) {
+  elements.centerText.className = "center-text visible waiting";
+  elements.centerText.textContent = question;
+}
+
+function renderAnswer(text) {
+  elements.centerText.className = "center-text visible answer";
+  elements.centerText.textContent = text;
+}
+
+function clearEverything() {
   state.currentQuestion = "";
-  renderGhostInput();
-}
+  state.lastAnswer = "";
+  state.isWaiting = false;
+  state.isTypingAnswer = false;
 
-function flashGhostInput() {
-  elements.ghostInput.classList.add("error-flash");
+  if (state.typewriterTimer) {
+    clearInterval(state.typewriterTimer);
+    state.typewriterTimer = null;
+  }
 
-  window.setTimeout(() => {
-    elements.ghostInput.classList.remove("error-flash");
-  }, 260);
+  renderBlank();
 }
 
 async function submitCurrentQuestion() {
   const question = state.currentQuestion.trim();
 
   if (!question) {
-    flashGhostInput();
+    renderBlank();
     return;
   }
 
   state.currentQuestion = "";
+  state.lastAnswer = "";
   state.isWaiting = true;
-  renderGhostInput();
 
-  addMessage("user", question);
-  const thinkingMessage = addThinkingMessage();
+  renderWaiting(question);
 
   try {
     const answer = await askDandii(question);
-    removeMessage(thinkingMessage);
-
-    await typeAssistantMessage(answer || EMPTY_KNOWLEDGE_MESSAGE);
+    state.isWaiting = false;
+    await typeAnswer(answer || DANDII_OFFLINE_MESSAGE);
   } catch (error) {
     console.error("Dandii request failed:", error);
-    removeMessage(thinkingMessage);
-
-    await typeAssistantMessage(DANDII_OFFLINE_MESSAGE);
-  } finally {
     state.isWaiting = false;
-    renderGhostInput();
+    await typeAnswer(DANDII_OFFLINE_MESSAGE);
   }
 }
 
@@ -157,87 +162,29 @@ async function askDandii(question) {
   return data.answer;
 }
 
-function addMessage(role, text) {
-  const message = document.createElement("article");
-  message.className = `message ${role}`;
-
-  const label = document.createElement("div");
-  label.className = "message-label";
-  label.textContent = role === "user" ? "USER" : "DANDII";
-
-  const body = document.createElement("div");
-  body.className = "message-body";
-  body.textContent = text;
-
-  message.appendChild(label);
-  message.appendChild(body);
-
-  elements.chatWindow.appendChild(message);
-  scrollChatToBottom();
-
-  return message;
-}
-
-function addThinkingMessage() {
-  const message = document.createElement("article");
-  message.className = "message assistant thinking";
-
-  const label = document.createElement("div");
-  label.className = "message-label";
-  label.textContent = "DANDII";
-
-  const body = document.createElement("div");
-  body.className = "message-body";
-
-  const dots = document.createElement("span");
-  dots.className = "thinking-dots";
-  dots.setAttribute("aria-label", "Dandii is thinking");
-
-  ["·", "·", "·"].forEach((dotText) => {
-    const dot = document.createElement("span");
-    dot.textContent = dotText;
-    dots.appendChild(dot);
-  });
-
-  body.appendChild(dots);
-  message.appendChild(label);
-  message.appendChild(body);
-
-  elements.chatWindow.appendChild(message);
-  scrollChatToBottom();
-
-  return message;
-}
-
-function removeMessage(message) {
-  if (message && message.parentNode) {
-    message.parentNode.removeChild(message);
-  }
-}
-
-function typeAssistantMessage(text) {
+function typeAnswer(text) {
   return new Promise((resolve) => {
-    const message = addMessage("assistant", "");
-    const body = message.querySelector(".message-body");
+    state.isTypingAnswer = true;
+    state.lastAnswer = text;
 
     let index = 0;
     const speedMs = getTypewriterSpeed(text);
 
-    clearInterval(state.typewriterTimer);
+    if (state.typewriterTimer) {
+      clearInterval(state.typewriterTimer);
+    }
+
+    renderAnswer("");
 
     state.typewriterTimer = window.setInterval(() => {
+      index += 1;
+      renderAnswer(text.slice(0, index));
+
       if (index >= text.length) {
         clearInterval(state.typewriterTimer);
         state.typewriterTimer = null;
+        state.isTypingAnswer = false;
         resolve();
-        return;
-      }
-
-      body.textContent += text.charAt(index);
-      index += 1;
-
-      if (index % 8 === 0) {
-        scrollChatToBottom();
       }
     }, speedMs);
   });
@@ -255,6 +202,11 @@ function getTypewriterSpeed(text) {
   return 11;
 }
 
-function scrollChatToBottom() {
-  elements.chatWindow.scrollTop = elements.chatWindow.scrollHeight;
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
