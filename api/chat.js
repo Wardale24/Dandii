@@ -16,11 +16,16 @@ module.exports = async function handler(req, res) {
   }
 
   /*
-    Visit this in the browser after deploying:
+    Diagnostic route.
 
-    https://YOUR-DANDII-SITE.vercel.app/api/chat
+    After deploying, visit:
 
-    This does NOT expose your Gemini key. It only tells us whether Vercel can see it.
+    https://dandii-ivory.vercel.app/api/chat
+
+    This does NOT expose your Gemini key.
+    It only tells us whether the API route is online,
+    whether Vercel can see the environment variable,
+    and whether the knowledge file was bundled.
   */
   if (req.method === "GET") {
     const knowledgeInfo = getKnowledgeInfo();
@@ -28,6 +33,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       message: "Dandii API route is online.",
+      deployedUrl: "https://dandii-ivory.vercel.app",
       nodeVersion: process.version,
       model: GEMINI_MODEL,
       hasGeminiApiKey: Boolean(process.env.GEMINI_API_KEY),
@@ -51,7 +57,10 @@ module.exports = async function handler(req, res) {
 
     if (!apiKey) {
       console.error("Missing GEMINI_API_KEY environment variable.");
-      return res.status(500).json({ answer: FALLBACK_ANSWER });
+
+      return res.status(500).json({
+        answer: FALLBACK_ANSWER
+      });
     }
 
     const question = getQuestionFromBody(req.body);
@@ -195,6 +204,7 @@ async function callGemini(apiKey, prompt) {
     console.error("Gemini request failed.");
     console.error("Gemini status:", response.status);
     console.error("Gemini response:", responseText);
+
     throw new Error(`Gemini API error ${response.status}`);
   }
 

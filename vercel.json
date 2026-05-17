@@ -1,13 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api/chat.js", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "style.css", "use": "@vercel/static" },
-    { "src": "script.js", "use": "@vercel/static" }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/$1" }
-  ]
+  "functions": {
+    "api/chat.js": {
+      "includeFiles": "data/knowledge.md"
+    }
+  }
 }
