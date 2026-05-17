@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const FALLBACK_ANSWER = "Dandii is offline. Please try again.";
@@ -136,18 +136,26 @@ async function callGemini(apiKey, prompt) {
       generationConfig: {
         temperature: 0.25,
         topP: 0.9,
-        topK: 40,
         maxOutputTokens: 1024
       }
     })
   });
 
+  const responseText = await response.text();
+
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API error ${response.status}: ${errorText}`);
+    console.error(`Gemini API error ${response.status}: ${responseText}`);
+    throw new Error(`Gemini API error ${response.status}`);
   }
 
-  const data = await response.json();
+  let data;
+
+  try {
+    data = JSON.parse(responseText);
+  } catch (error) {
+    console.error("Could not parse Gemini response:", responseText);
+    throw error;
+  }
 
   const text =
     data?.candidates?.[0]?.content?.parts
