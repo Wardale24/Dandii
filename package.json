@@ -1,0 +1,8 @@
+{
+  "name": "dandii",
+  "version": "1.0.0",
+  "description": "Dandii AI Chatbot — Biological Design Unit, OIST",
+  "engines": {
+    "node": "18.x"
+  }
+}

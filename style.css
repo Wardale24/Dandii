@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Dandii — AI chatbot for the Biological Design Unit at OIST"
+  />
+  <title>DANDII · Biological Design Unit · OIST</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="./style.css" />
+  <script src="./script.js" defer></script>
+</head>
+
+<body>
+  <div class="crt-overlay" aria-hidden="true"></div>
+  <div class="background-noise" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">OIST · BIOLOGICAL DESIGN UNIT</p>
+      <h1 class="title glitch" data-text="DANDII">DANDII</h1>
+      <p class="subtitle">Biological Design Unit · OIST</p>
+    </header>
+
+    <section
+      id="model-viewport"
+      class="model-viewport"
+      aria-label="Reserved viewport for future Dandii 3D model"
+    >
+      <div class="viewport-corners" aria-hidden="true"></div>
+
+      <svg
+        class="bio-orb"
+        viewBox="0 0 420 260"
+        role="img"
+        aria-label="Bioluminescent placeholder animation"
+      >
+        <defs>
+          <filter id="cyanGlow">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+
+          <linearGradient id="helixGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00f5d4" />
+            <stop offset="55%" stop-color="#7df9ff" />
+            <stop offset="100%" stop-color="#7209b7" />
+          </linearGradient>
+        </defs>
+
+        <g class="hex-grid" filter="url(#cyanGlow)">
+          <path d="M210 18 L360 88 L360 172 L210 242 L60 172 L60 88 Z" />
+          <path d="M210 52 L314 101 L314 159 L210 208 L106 159 L106 101 Z" />
+          <path d="M210 86 L268 114 L268 146 L210 174 L152 146 L152 114 Z" />
+          <line x1="210" y1="18" x2="210" y2="242" />
+          <line x1="60" y1="88" x2="360" y2="172" />
+          <line x1="360" y1="88" x2="60" y2="172" />
+        </g>
+
+        <g class="helix" filter="url(#cyanGlow)">
+          <path
+            d="M110 55 C190 20, 230 100, 310 65 C230 115, 190 145, 110 105 C190 150, 230 210, 310 170"
+            fill="none"
+            stroke="url(#helixGradient)"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
+          <path
+            d="M310 55 C230 20, 190 100, 110 65 C190 115, 230 145, 310 105 C230 150, 190 210, 110 170"
+            fill="none"
+            stroke="url(#helixGradient)"
+            stroke-width="2"
+            stroke-linecap="round"
+            opacity="0.8"
+          />
+
+          <line x1="134" y1="51" x2="287" y2="61" />
+          <line x1="159" y1="68" x2="262" y2="83" />
+          <line x1="184" y1="92" x2="237" y2="103" />
+          <line x1="158" y1="116" x2="263" y2="105" />
+          <line x1="134" y1="102" x2="287" y2="117" />
+          <line x1="160" y1="128" x2="262" y2="153" />
+          <line x1="185" y1="154" x2="236" y2="174" />
+          <line x1="135" y1="178" x2="286" y2="169" />
+        </g>
+      </svg>
+
+      <div class="model-status">
+        <span class="status-light"></span>
+        3D MODEL PORT RESERVED
+      </div>
+    </section>
+
+    <section class="chat-panel" aria-label="Dandii conversation terminal">
+      <div class="panel-header">
+        <span>DANDII TERMINAL</span>
+        <span class="signal">SIGNAL: LOCAL KNOWLEDGE ONLY</span>
+      </div>
+
+      <div id="chat-window" class="chat-window" aria-live="polite" aria-relevant="additions"></div>
+    </section>
+  </main>
+
+  <div id="ghost-input" class="ghost-input" aria-live="polite">
+    <span class="prompt-symbol">&gt; QUERY:</span>
+    <span id="query-text" class="query-text">TYPE ANYWHERE TO QUERY BIOLOGICAL DESIGN UNIT</span>
+    <span class="cursor" aria-hidden="true">_</span>
+  </div>
+
+  <noscript>
+    <div class="noscript-warning">
+      Dandii requires JavaScript to capture keyboard input and contact the local AI endpoint.
+    </div>
+  </noscript>
+</body>
+</html>
