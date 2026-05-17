@@ -15,6 +15,31 @@ module.exports = async function handler(req, res) {
     return res.status(204).end();
   }
 
+  /*
+    Visit this in the browser after deploying:
+
+    https://YOUR-DANDII-SITE.vercel.app/api/chat
+
+    This does NOT expose your Gemini key. It only tells us whether Vercel can see it.
+  */
+  if (req.method === "GET") {
+    const knowledgeInfo = getKnowledgeInfo();
+
+    return res.status(200).json({
+      ok: true,
+      message: "Dandii API route is online.",
+      nodeVersion: process.version,
+      model: GEMINI_MODEL,
+      hasGeminiApiKey: Boolean(process.env.GEMINI_API_KEY),
+      geminiApiKeyLength: process.env.GEMINI_API_KEY
+        ? process.env.GEMINI_API_KEY.length
+        : 0,
+      knowledgeFileFound: knowledgeInfo.found,
+      knowledgeCharacters: knowledgeInfo.characters,
+      knowledgePath: knowledgeInfo.path
+    });
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({
       answer: "Dandii only accepts POST requests."
@@ -46,13 +71,16 @@ module.exports = async function handler(req, res) {
     });
   } catch (error) {
     console.error("Dandii API error:", error);
-    return res.status(500).json({ answer: FALLBACK_ANSWER });
+
+    return res.status(500).json({
+      answer: FALLBACK_ANSWER
+    });
   }
 };
 
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
@@ -79,6 +107,26 @@ function sanitizeQuestion(question) {
   }
 
   return question.trim().slice(0, 2000);
+}
+
+function getKnowledgeInfo() {
+  const knowledgePath = path.join(process.cwd(), "data", "knowledge.md");
+
+  try {
+    const knowledge = fs.readFileSync(knowledgePath, "utf8");
+
+    return {
+      found: true,
+      characters: knowledge.length,
+      path: knowledgePath
+    };
+  } catch {
+    return {
+      found: false,
+      characters: 0,
+      path: knowledgePath
+    };
+  }
 }
 
 function readKnowledgeFile() {
@@ -144,7 +192,9 @@ async function callGemini(apiKey, prompt) {
   const responseText = await response.text();
 
   if (!response.ok) {
-    console.error(`Gemini API error ${response.status}: ${responseText}`);
+    console.error("Gemini request failed.");
+    console.error("Gemini status:", response.status);
+    console.error("Gemini response:", responseText);
     throw new Error(`Gemini API error ${response.status}`);
   }
 
