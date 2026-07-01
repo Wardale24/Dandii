@@ -1,138 +1,167 @@
 const DANDII_OFFLINE_MESSAGE = "Dandii is offline. Please try again.";
+const DANDII_THINKING_MESSAGE = "Dandii is thinking...";
 
 const state = {
   currentQuestion: "",
+  submittedQuestion: "",
   lastAnswer: "",
   isWaiting: false,
   isTypingAnswer: false,
   maxCharacters: 1200,
-  typewriterTimer: null
+  typewriterTimer: null,
+  copyResetTimer: null
 };
 
 const elements = {};
 
 document.addEventListener("DOMContentLoaded", () => {
-  elements.centerText = document.getElementById("center-text");
-  renderBlank();
+  elements.stage = document.getElementById("stage");
+  elements.bubbleStack = document.getElementById("bubble-stack") || document.querySelector(".bubble-stack");
+  elements.composer = document.getElementById("composer");
+  elements.questionInput = document.getElementById("question-input");
+  elements.questionRow = document.getElementById("question-row");
+  elements.questionBubble = document.getElementById("question-bubble");
+  elements.answerRow = document.getElementById("answer-row");
+  elements.answerBubble = document.getElementById("answer-bubble");
+  elements.sendButton = document.getElementById("send-button");
+  elements.copyButton = document.getElementById("copy-button");
+  elements.resetButton = document.getElementById("reset-button");
 
-  window.addEventListener("keydown", handleGlobalKeydown);
+  elements.composer.addEventListener("submit", handleSubmit);
+  elements.questionInput.addEventListener("input", handleQuestionInput);
+  elements.questionInput.addEventListener("keydown", handleQuestionKeydown);
+
+  if (elements.copyButton) {
+    elements.copyButton.addEventListener("click", copyLastAnswer);
+  }
+
+  if (elements.resetButton) {
+    elements.resetButton.addEventListener("click", clearEverything);
+  }
+
+  document.addEventListener("keydown", handleDocumentKeydown);
+
+  resetInterface();
+  elements.questionInput.focus();
 });
 
-function handleGlobalKeydown(event) {
-  if (shouldIgnoreKeydown(event)) {
+function handleSubmit(event) {
+  event.preventDefault();
+  submitCurrentQuestion();
+}
+
+function handleQuestionInput() {
+  state.currentQuestion = elements.questionInput.value.slice(0, state.maxCharacters);
+
+  if (elements.questionInput.value.length > state.maxCharacters) {
+    elements.questionInput.value = state.currentQuestion;
+  }
+
+  resizeQuestionInput();
+}
+
+function handleQuestionKeydown(event) {
+  if (event.key !== "Enter" || event.shiftKey) {
     return;
   }
 
-  if (event.ctrlKey || event.metaKey || event.altKey) {
-    return;
-  }
+  event.preventDefault();
+  submitCurrentQuestion();
+}
 
-  if (state.isWaiting || state.isTypingAnswer) {
-    event.preventDefault();
-    return;
-  }
-
+function handleDocumentKeydown(event) {
   if (event.key === "Escape") {
     event.preventDefault();
     clearEverything();
-    return;
-  }
-
-  if (event.key === "Backspace") {
-    event.preventDefault();
-
-    if (state.currentQuestion.length > 0) {
-      state.currentQuestion = state.currentQuestion.slice(0, -1);
-      renderQuestion();
-    } else {
-      renderBlank();
-    }
-
-    return;
-  }
-
-  if (event.key === "Enter") {
-    event.preventDefault();
-    submitCurrentQuestion();
-    return;
-  }
-
-  if (event.key.length === 1 && state.currentQuestion.length < state.maxCharacters) {
-    event.preventDefault();
-
-    if (state.lastAnswer) {
-      state.lastAnswer = "";
-      state.currentQuestion = "";
-    }
-
-    state.currentQuestion += event.key;
-    renderQuestion();
   }
 }
 
-function shouldIgnoreKeydown(event) {
-  const target = event.target;
-  const tagName = target?.tagName?.toLowerCase();
-
-  if (target?.isContentEditable) {
-    return true;
-  }
-
-  return tagName === "input" || tagName === "textarea" || tagName === "select";
+function showQuestionBubble(text) {
+  elements.questionBubble.textContent = text;
+  elements.questionRow.hidden = false;
+  elements.questionRow.classList.remove("hidden");
+  scrollBubblesToBottom();
 }
 
-function renderBlank() {
-  elements.centerText.className = "center-text";
-  elements.centerText.textContent = "";
+function hideQuestionBubble() {
+  elements.questionBubble.textContent = "";
+  elements.questionRow.hidden = true;
+  elements.questionRow.classList.add("hidden");
 }
 
-function renderQuestion() {
-  if (!state.currentQuestion) {
-    renderBlank();
-    return;
-  }
-
-  elements.centerText.className = "center-text visible";
-  elements.centerText.innerHTML = `${escapeHtml(state.currentQuestion)}<span class="cursor">_</span>`;
+function showAnswerBubble(text, options = {}) {
+  elements.answerBubble.textContent = text;
+  elements.answerBubble.classList.toggle("thinking", Boolean(options.thinking));
+  elements.answerRow.hidden = false;
+  elements.answerRow.classList.remove("hidden");
+  scrollBubblesToBottom();
 }
 
-function renderWaiting(question) {
-  elements.centerText.className = "center-text visible waiting";
-  elements.centerText.textContent = question;
+function hideAnswerBubble() {
+  elements.answerBubble.textContent = "";
+  elements.answerBubble.classList.remove("thinking");
+  elements.answerRow.hidden = true;
+  elements.answerRow.classList.add("hidden");
 }
 
-function renderAnswer(text) {
-  elements.centerText.className = "center-text visible answer";
-  elements.centerText.textContent = text;
-}
-
-function clearEverything() {
+function resetInterface() {
   state.currentQuestion = "";
+  state.submittedQuestion = "";
   state.lastAnswer = "";
   state.isWaiting = false;
   state.isTypingAnswer = false;
 
-  if (state.typewriterTimer) {
-    clearInterval(state.typewriterTimer);
-    state.typewriterTimer = null;
-  }
+  hideQuestionBubble();
+  hideAnswerBubble();
+  setControlsReady();
+  resetCopyButtonLabel();
+  resizeQuestionInput();
+}
 
-  renderBlank();
+function clearEverything() {
+  stopTypewriter();
+  elements.questionInput.value = "";
+  resetInterface();
+  elements.questionInput.focus();
+}
+
+function clearAnswerOnly() {
+  stopTypewriter();
+  state.submittedQuestion = "";
+  state.lastAnswer = "";
+  hideQuestionBubble();
+  hideAnswerBubble();
+  hideCopyButton();
+  resetCopyButtonLabel();
 }
 
 async function submitCurrentQuestion() {
-  const question = state.currentQuestion.trim();
+  if (state.isWaiting || state.isTypingAnswer) {
+    return;
+  }
+
+  const question = elements.questionInput.value.trim();
 
   if (!question) {
-    renderBlank();
+    elements.questionInput.value = "";
+    state.currentQuestion = "";
+    resizeQuestionInput();
     return;
   }
 
   state.currentQuestion = "";
+  state.submittedQuestion = question;
   state.lastAnswer = "";
   state.isWaiting = true;
 
-  renderWaiting(question);
+  elements.questionInput.value = "";
+  resizeQuestionInput();
+
+  showQuestionBubble(question);
+  showAnswerBubble(DANDII_THINKING_MESSAGE, { thinking: true });
+  hideCopyButton();
+  resetCopyButtonLabel();
+  setControlsWaiting();
 
   try {
     const answer = await askDandii(question);
@@ -170,24 +199,29 @@ function typeAnswer(text) {
     let index = 0;
     const speedMs = getTypewriterSpeed(text);
 
-    if (state.typewriterTimer) {
-      clearInterval(state.typewriterTimer);
-    }
-
-    renderAnswer("");
+    stopTypewriter();
+    showAnswerBubble("");
 
     state.typewriterTimer = window.setInterval(() => {
       index += 1;
-      renderAnswer(text.slice(0, index));
+      showAnswerBubble(text.slice(0, index));
 
       if (index >= text.length) {
-        clearInterval(state.typewriterTimer);
-        state.typewriterTimer = null;
+        stopTypewriter();
         state.isTypingAnswer = false;
+        setControlsReady();
+        showCopyButton();
         resolve();
       }
     }, speedMs);
   });
+}
+
+function stopTypewriter() {
+  if (state.typewriterTimer) {
+    clearInterval(state.typewriterTimer);
+    state.typewriterTimer = null;
+  }
 }
 
 function getTypewriterSpeed(text) {
@@ -202,11 +236,103 @@ function getTypewriterSpeed(text) {
   return 11;
 }
 
-function escapeHtml(value) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+async function copyLastAnswer() {
+  if (!state.lastAnswer || !elements.copyButton) {
+    return;
+  }
+
+  try {
+    await copyTextToClipboard(state.lastAnswer);
+    elements.copyButton.textContent = "Copied";
+  } catch (error) {
+    console.error("Copy failed:", error);
+    elements.copyButton.textContent = "Copy failed";
+  }
+
+  if (state.copyResetTimer) {
+    clearTimeout(state.copyResetTimer);
+  }
+
+  state.copyResetTimer = window.setTimeout(resetCopyButtonLabel, 1300);
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const temporaryTextArea = document.createElement("textarea");
+  temporaryTextArea.value = text;
+  temporaryTextArea.setAttribute("readonly", "");
+  temporaryTextArea.style.position = "absolute";
+  temporaryTextArea.style.left = "-9999px";
+
+  document.body.appendChild(temporaryTextArea);
+  temporaryTextArea.select();
+  document.execCommand("copy");
+  document.body.removeChild(temporaryTextArea);
+}
+
+function showCopyButton() {
+  if (!elements.copyButton) {
+    return;
+  }
+
+  elements.copyButton.hidden = false;
+  elements.copyButton.classList.remove("hidden");
+}
+
+function hideCopyButton() {
+  if (!elements.copyButton) {
+    return;
+  }
+
+  elements.copyButton.hidden = true;
+  elements.copyButton.classList.add("hidden");
+}
+
+function resetCopyButtonLabel() {
+  if (!elements.copyButton) {
+    return;
+  }
+
+  elements.copyButton.textContent = "Copy";
+}
+
+function setControlsWaiting() {
+  if (elements.sendButton) {
+    elements.sendButton.disabled = true;
+  }
+
+  elements.questionInput.disabled = true;
+  elements.questionInput.placeholder = "Dandii is thinking...";
+}
+
+function setControlsReady() {
+  if (elements.sendButton) {
+    elements.sendButton.disabled = false;
+  }
+
+  elements.questionInput.disabled = false;
+  elements.questionInput.placeholder = "Ask Dandii a question...";
+}
+
+function resizeQuestionInput() {
+  if (!elements.questionInput) {
+    return;
+  }
+
+  elements.questionInput.style.height = "auto";
+  elements.questionInput.style.height = `${elements.questionInput.scrollHeight}px`;
+}
+
+function scrollBubblesToBottom() {
+  if (elements.bubbleStack) {
+    elements.bubbleStack.scrollTop = elements.bubbleStack.scrollHeight;
+  }
+
+  if (elements.stage) {
+    elements.stage.scrollTop = elements.stage.scrollHeight;
+  }
 }

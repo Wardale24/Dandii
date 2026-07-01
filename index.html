@@ -3,26 +3,272 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-    name="description"
-    content="Dandii — AI chatbot for the Biological Design Unit at OIST"
-  />
-  <title>DANDII</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
-    rel="stylesheet"
-  />
+  <title>Dandii</title>
 
   <link rel="stylesheet" href="./style.css" />
-  <script src="./script.js" defer></script>
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    #stage {
+      min-height: 100vh !important;
+      width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 2rem !important;
+    }
+
+    .chat-shell {
+      width: min(1100px, 94vw) !important;
+      min-height: min(760px, 86vh);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .bubble-stack {
+      width: 100%;
+    }
+
+    .dandii-intro-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .dandii-mascot {
+      width: 160px;
+      max-width: 28vw;
+      height: auto;
+      display: block;
+      flex: 0 0 auto;
+      pointer-events: none;
+      user-select: none;
+      transform: translateY(8px);
+    }
+
+    .dandii-spacer {
+      width: 160px;
+      max-width: 28vw;
+      flex: 0 0 auto;
+    }
+
+    .bubble {
+      text-align: left;
+      text-wrap: pretty;
+      overflow-wrap: break-word;
+      word-break: normal;
+      hyphens: auto;
+      line-height: 1.58;
+      letter-spacing: 0.005em;
+    }
+
+    .assistant-bubble,
+    .user-bubble {
+      max-width: min(680px, 100%);
+    }
+
+    .dandii-intro-row .assistant-bubble,
+    #answer-bubble,
+    #question-bubble {
+      position: relative;
+    }
+
+    .dandii-intro-row .assistant-bubble::before,
+    #answer-bubble::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      bottom: 22px;
+      width: 18px;
+      height: 18px;
+      background: inherit;
+      border-left: inherit;
+      border-bottom: inherit;
+      transform: rotate(45deg);
+      border-bottom-left-radius: 4px;
+    }
+
+    #question-bubble::after {
+      content: "";
+      position: absolute;
+      right: -10px;
+      bottom: 22px;
+      width: 18px;
+      height: 18px;
+      background: inherit;
+      border-right: inherit;
+      border-bottom: inherit;
+      transform: rotate(-45deg);
+      border-bottom-right-radius: 4px;
+    }
+
+    .answer-row-with-spacer {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .composer-actions {
+      display: none !important;
+    }
+
+    .hidden-control {
+      display: none !important;
+    }
+
+    #composer {
+      width: 100%;
+    }
+
+    #question-input {
+      width: 100%;
+    }
+
+    @media (max-width: 720px) {
+      #stage {
+        padding: 1rem !important;
+      }
+
+      .chat-shell {
+        width: 100% !important;
+        min-height: 88vh;
+      }
+
+      .dandii-mascot,
+      .dandii-spacer {
+        width: 95px;
+      }
+
+      .dandii-intro-row,
+      .answer-row-with-spacer {
+        gap: 0.7rem;
+      }
+
+      .assistant-bubble,
+      .user-bubble {
+        max-width: min(620px, 100%);
+      }
+    }
+
+    @media (max-width: 480px) {
+      #stage {
+        padding: 0.75rem !important;
+      }
+
+      .chat-shell {
+        min-height: 92vh;
+      }
+
+      .dandii-mascot,
+      .dandii-spacer {
+        width: 76px;
+      }
+
+      .dandii-intro-row,
+      .answer-row-with-spacer {
+        gap: 0.55rem;
+      }
+
+      .bubble {
+        line-height: 1.5;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <main id="stage" class="stage" aria-label="Dandii chatbot">
-    <div id="center-text" class="center-text" aria-live="polite"></div>
+  <main id="stage">
+    <section class="chat-shell" aria-label="Dandii chat interface">
+      <div class="bubble-stack">
+        <div class="bubble-row assistant-row">
+          <div class="dandii-intro-row">
+            <video
+              class="dandii-mascot"
+              src="assets/dandii-idle.webm"
+              autoplay
+              loop
+              muted
+              playsinline
+              aria-hidden="true"
+            ></video>
+
+            <div class="bubble assistant-bubble">
+              Hi there! I'm Dandii, your Biodesign Unit personal helper. Ask me anything about the unit and I will do my best to help you out!
+            </div>
+          </div>
+        </div>
+
+        <div id="question-row" class="bubble-row user-row" hidden>
+          <div id="question-bubble" class="bubble user-bubble"></div>
+        </div>
+
+        <div id="answer-row" class="bubble-row assistant-row" hidden>
+          <div class="answer-row-with-spacer">
+            <div class="dandii-spacer" aria-hidden="true"></div>
+            <div id="answer-bubble" class="bubble assistant-bubble"></div>
+          </div>
+        </div>
+      </div>
+
+      <form id="composer">
+        <textarea
+          id="question-input"
+          name="question"
+          rows="4"
+          placeholder="Ask Dandii a question..."
+          autocomplete="off"
+          onkeydown="if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.requestSubmit(); }"
+        ></textarea>
+
+        <div class="composer-actions">
+          <button
+            id="send-button"
+            class="hidden-control"
+            type="submit"
+            title="Ask Dandii"
+            aria-label="Ask Dandii"
+          >
+            Ask Dandii
+          </button>
+
+          <button
+            id="copy-button"
+            class="hidden-control"
+            type="button"
+            title="Copy answer"
+            aria-label="Copy answer"
+          >
+            Copy
+          </button>
+
+          <button
+            id="reset-button"
+            class="hidden-control"
+            type="button"
+            title="Reset"
+            aria-label="Reset conversation"
+          >
+            ↺
+          </button>
+        </div>
+      </form>
+    </section>
   </main>
+
+  <script src="./script.js"></script>
 </body>
 </html>
