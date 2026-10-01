@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,23 +18,113 @@
 
     body {
       min-height: 100vh;
+
+      transition:
+        background-color 220ms ease,
+        color 220ms ease;
     }
 
     #stage {
       min-height: 100vh !important;
       width: 100% !important;
+
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
+
       padding: 2rem !important;
+
+      transition:
+        background 220ms ease;
     }
 
     .chat-shell {
       width: min(1100px, 94vw) !important;
       min-height: min(760px, 86vh);
+
       display: flex;
       flex-direction: column;
       justify-content: center;
+
+      position: relative;
+
+      transition:
+        background 220ms ease,
+        border-color 220ms ease,
+        box-shadow 220ms ease;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 20;
+
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      padding: 4px;
+
+      border: 1px solid rgba(180, 202, 154, 0.28);
+      border-radius: 999px;
+
+      background: rgba(5, 9, 4, 0.72);
+
+      color: #b4ca9a;
+
+      box-shadow:
+        0 0 16px rgba(157, 183, 123, 0.05),
+        inset 0 0 12px rgba(157, 183, 123, 0.03);
+
+      backdrop-filter: blur(6px);
+
+      cursor: pointer;
+
+      transition:
+        background 220ms ease,
+        border-color 220ms ease,
+        color 220ms ease,
+        box-shadow 220ms ease;
+    }
+
+    .theme-toggle-icon {
+      width: 34px;
+      height: 34px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 999px;
+
+      color: rgba(180, 202, 154, 0.42);
+
+      transition:
+        background 160ms ease,
+        color 160ms ease,
+        box-shadow 160ms ease;
+    }
+
+    .theme-toggle-icon svg {
+      width: 19px;
+      height: 19px;
+
+      display: block;
+    }
+
+    .theme-toggle-icon.active {
+      background: rgba(180, 202, 154, 0.11);
+
+      color: #d6edb8;
+
+      box-shadow:
+        0 0 10px rgba(157, 183, 123, 0.14),
+        inset 0 0 8px rgba(180, 202, 154, 0.04);
+    }
+
+    .theme-toggle:hover {
+      border-color: rgba(180, 202, 154, 0.42);
     }
 
     .bubble-stack {
@@ -44,7 +134,9 @@
     .dandii-intro-row {
       display: flex;
       align-items: flex-end;
+
       gap: 1rem;
+
       width: 100%;
     }
 
@@ -52,32 +144,60 @@
       width: 160px;
       max-width: 28vw;
       height: auto;
+
       display: block;
       flex: 0 0 auto;
+
       pointer-events: none;
       user-select: none;
+
       transform: translateY(8px);
     }
 
     .dandii-spacer {
       width: 160px;
       max-width: 28vw;
+
       flex: 0 0 auto;
     }
 
     .bubble {
       text-align: left;
       text-wrap: pretty;
+
       overflow-wrap: break-word;
       word-break: normal;
-      hyphens: auto;
+
+      hyphens: none;
+
       line-height: 1.58;
       letter-spacing: 0.005em;
+
+      transition:
+        background 220ms ease,
+        border-color 220ms ease,
+        color 220ms ease,
+        box-shadow 220ms ease;
+    }
+
+    .dandii-intro-row .assistant-bubble {
+      text-align: left;
+      white-space: normal;
+    }
+
+    .intro-greeting {
+      display: block;
+
+      text-align: left;
     }
 
     .assistant-bubble,
     .user-bubble {
       max-width: min(680px, 100%);
+    }
+
+    .user-row {
+      padding-right: 0.75rem;
     }
 
     .dandii-intro-row .assistant-bubble,
@@ -89,36 +209,52 @@
     .dandii-intro-row .assistant-bubble::before,
     #answer-bubble::before {
       content: "";
+
       position: absolute;
+
       left: -10px;
       bottom: 22px;
+
       width: 18px;
       height: 18px;
+
       background: inherit;
+
       border-left: inherit;
       border-bottom: inherit;
+
       transform: rotate(45deg);
+
       border-bottom-left-radius: 4px;
     }
 
     #question-bubble::after {
       content: "";
+
       position: absolute;
+
       right: -10px;
       bottom: 22px;
+
       width: 18px;
       height: 18px;
+
       background: inherit;
+
       border-right: inherit;
       border-bottom: inherit;
+
       transform: rotate(-45deg);
+
       border-bottom-right-radius: 4px;
     }
 
     .answer-row-with-spacer {
       display: flex;
       align-items: flex-end;
+
       gap: 1rem;
+
       width: 100%;
     }
 
@@ -136,6 +272,159 @@
 
     #question-input {
       width: 100%;
+
+      transition:
+        background 220ms ease,
+        border-color 220ms ease,
+        color 220ms ease,
+        box-shadow 220ms ease;
+    }
+
+    /*
+      LIGHT MODE
+    */
+
+    html[data-theme="light"] {
+      --color-bg: #f4f0e3;
+      --color-bg-soft: #ebe8da;
+
+      --color-panel: rgba(244, 241, 228, 0.88);
+      --color-panel-strong: rgba(249, 247, 236, 0.96);
+
+      --color-text: #586a48;
+      --color-text-bright: #34472b;
+
+      --color-glow: #879b70;
+
+      --color-muted: rgba(74, 94, 59, 0.55);
+
+      --color-border: rgba(82, 105, 65, 0.27);
+      --color-border-strong: rgba(73, 96, 57, 0.43);
+    }
+
+    html[data-theme="light"] body {
+      background: #f4f0e3;
+    }
+
+    html[data-theme="light"] #stage {
+      background:
+        radial-gradient(
+          circle at 50% 42%,
+          rgba(126, 151, 101, 0.09),
+          transparent 34rem
+        ),
+        radial-gradient(
+          circle at 18% 20%,
+          rgba(126, 151, 101, 0.05),
+          transparent 27rem
+        ),
+        linear-gradient(
+          180deg,
+          #f7f4e9,
+          #eeeada
+        );
+    }
+
+    html[data-theme="light"] .chat-shell {
+      border-color: rgba(82, 105, 65, 0.28);
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(250, 248, 238, 0.94),
+          rgba(237, 235, 219, 0.90)
+        ),
+        #f1eedf;
+
+      box-shadow:
+        0 0 28px rgba(91, 113, 72, 0.07),
+        inset 0 0 46px rgba(116, 137, 92, 0.045);
+    }
+
+    html[data-theme="light"] .assistant-bubble {
+      background:
+        linear-gradient(
+          180deg,
+          rgba(116, 142, 93, 0.08),
+          rgba(116, 142, 93, 0.025)
+        ),
+        rgba(250, 248, 238, 0.96);
+
+      color: #536743;
+
+      border-color: rgba(82, 105, 65, 0.28);
+
+      text-shadow: none;
+    }
+
+    html[data-theme="light"] .user-bubble {
+      background:
+        linear-gradient(
+          180deg,
+          rgba(117, 143, 94, 0.14),
+          rgba(117, 143, 94, 0.07)
+        ),
+        rgba(237, 239, 223, 0.98);
+
+      color: #34472b;
+
+      border-color: rgba(73, 96, 57, 0.40);
+
+      text-shadow: none;
+    }
+
+    html[data-theme="light"] #question-input {
+      background: rgba(250, 248, 238, 0.86);
+
+      color: #34472b;
+      caret-color: #34472b;
+
+      border-color: rgba(82, 105, 65, 0.30);
+
+      box-shadow:
+        inset 0 0 20px rgba(91, 113, 72, 0.035);
+    }
+
+    html[data-theme="light"] #question-input::placeholder {
+      color: rgba(74, 94, 59, 0.42);
+    }
+
+    html[data-theme="light"] #question-input:focus {
+      border-color: rgba(73, 96, 57, 0.48);
+
+      box-shadow:
+        0 0 16px rgba(91, 113, 72, 0.08),
+        inset 0 0 20px rgba(91, 113, 72, 0.04);
+    }
+
+    html[data-theme="light"] .theme-toggle {
+      background: rgba(248, 246, 235, 0.86);
+
+      border-color: rgba(82, 105, 65, 0.30);
+
+      color: #4e6240;
+
+      box-shadow:
+        0 0 14px rgba(91, 113, 72, 0.05),
+        inset 0 0 10px rgba(91, 113, 72, 0.025);
+    }
+
+    html[data-theme="light"] .theme-toggle-icon {
+      color: rgba(73, 96, 57, 0.43);
+    }
+
+    html[data-theme="light"] .theme-toggle-icon.active {
+      background: rgba(96, 120, 76, 0.12);
+
+      color: #34472b;
+
+      box-shadow:
+        0 0 9px rgba(91, 113, 72, 0.10),
+        inset 0 0 7px rgba(91, 113, 72, 0.04);
+    }
+
+    html[data-theme="light"] .thinking {
+      color: rgba(74, 94, 59, 0.54);
     }
 
     @media (max-width: 720px) {
@@ -146,6 +435,21 @@
       .chat-shell {
         width: 100% !important;
         min-height: 88vh;
+      }
+
+      .theme-toggle {
+        top: 12px;
+        right: 12px;
+      }
+
+      .theme-toggle-icon {
+        width: 30px;
+        height: 30px;
+      }
+
+      .theme-toggle-icon svg {
+        width: 17px;
+        height: 17px;
       }
 
       .dandii-mascot,
@@ -161,6 +465,10 @@
       .assistant-bubble,
       .user-bubble {
         max-width: min(620px, 100%);
+      }
+
+      .user-row {
+        padding-right: 0.65rem;
       }
     }
 
@@ -186,16 +494,180 @@
       .bubble {
         line-height: 1.5;
       }
+
+      .user-row {
+        padding-right: 0.6rem;
+      }
     }
   </style>
 </head>
 
 <body>
   <main id="stage">
-    <section class="chat-shell" aria-label="Dandii chat interface">
+    <section
+      class="chat-shell"
+      aria-label="Dandii chat interface"
+    >
+
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        type="button"
+        aria-label="Switch to light mode"
+        title="Switch to light mode"
+        onclick="
+          event.stopImmediatePropagation();
+
+          const root = document.documentElement;
+
+          const nextTheme =
+            root.dataset.theme === 'light'
+              ? 'dark'
+              : 'light';
+
+          root.dataset.theme = nextTheme;
+
+          document
+            .getElementById('theme-moon')
+            .classList.toggle(
+              'active',
+              nextTheme === 'dark'
+            );
+
+          document
+            .getElementById('theme-sun')
+            .classList.toggle(
+              'active',
+              nextTheme === 'light'
+            );
+
+          this.setAttribute(
+            'aria-label',
+            nextTheme === 'light'
+              ? 'Switch to dark mode'
+              : 'Switch to light mode'
+          );
+
+          this.setAttribute(
+            'title',
+            nextTheme === 'light'
+              ? 'Switch to dark mode'
+              : 'Switch to light mode'
+          );
+
+          try {
+            localStorage.setItem(
+              'dandii-theme',
+              nextTheme
+            );
+          } catch (error) {}
+        "
+      >
+
+        <span
+          id="theme-moon"
+          class="theme-toggle-icon active"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.7 6.7 0 0 0 9.8 9.8z"
+            ></path>
+          </svg>
+        </span>
+
+        <span
+          id="theme-sun"
+          class="theme-toggle-icon"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="3.5"
+            ></circle>
+
+            <line
+              x1="12"
+              y1="2"
+              x2="12"
+              y2="4"
+            ></line>
+
+            <line
+              x1="12"
+              y1="20"
+              x2="12"
+              y2="22"
+            ></line>
+
+            <line
+              x1="4.93"
+              y1="4.93"
+              x2="6.34"
+              y2="6.34"
+            ></line>
+
+            <line
+              x1="17.66"
+              y1="17.66"
+              x2="19.07"
+              y2="19.07"
+            ></line>
+
+            <line
+              x1="2"
+              y1="12"
+              x2="4"
+              y2="12"
+            ></line>
+
+            <line
+              x1="20"
+              y1="12"
+              x2="22"
+              y2="12"
+            ></line>
+
+            <line
+              x1="4.93"
+              y1="19.07"
+              x2="6.34"
+              y2="17.66"
+            ></line>
+
+            <line
+              x1="17.66"
+              y1="6.34"
+              x2="19.07"
+              y2="4.93"
+            ></line>
+          </svg>
+        </span>
+
+      </button>
+
       <div class="bubble-stack">
+
         <div class="bubble-row assistant-row">
+
           <div class="dandii-intro-row">
+
             <video
               class="dandii-mascot"
               src="assets/dandii-idle.webm"
@@ -207,34 +679,75 @@
             ></video>
 
             <div class="bubble assistant-bubble">
-              Hi there! I'm Dandii, your Biodesign Unit personal helper. Ask me anything about the unit and I will do my best to help you out!
+
+              <span class="intro-greeting">
+                Hi there!
+              </span>
+
+              I'm Dandii, your Biodesign Unit personal helper. Ask me anything about the unit and I will do my best to help you out!
+
             </div>
+
           </div>
+
         </div>
 
-        <div id="question-row" class="bubble-row user-row" hidden>
-          <div id="question-bubble" class="bubble user-bubble"></div>
+        <div
+          id="question-row"
+          class="bubble-row user-row"
+          hidden
+        >
+          <div
+            id="question-bubble"
+            class="bubble user-bubble"
+          ></div>
         </div>
 
-        <div id="answer-row" class="bubble-row assistant-row" hidden>
+        <div
+          id="answer-row"
+          class="bubble-row assistant-row"
+          hidden
+        >
+
           <div class="answer-row-with-spacer">
-            <div class="dandii-spacer" aria-hidden="true"></div>
-            <div id="answer-bubble" class="bubble assistant-bubble"></div>
+
+            <div
+              class="dandii-spacer"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              id="answer-bubble"
+              class="bubble assistant-bubble"
+            ></div>
+
           </div>
+
         </div>
+
       </div>
 
       <form id="composer">
+
         <textarea
           id="question-input"
           name="question"
           rows="4"
           placeholder="Ask Dandii a question..."
           autocomplete="off"
-          onkeydown="if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.requestSubmit(); }"
+          onkeydown="
+            if (
+              event.key === 'Enter' &&
+              !event.shiftKey
+            ) {
+              event.preventDefault();
+              this.form.requestSubmit();
+            }
+          "
         ></textarea>
 
         <div class="composer-actions">
+
           <button
             id="send-button"
             class="hidden-control"
@@ -264,8 +777,11 @@
           >
             ↺
           </button>
+
         </div>
+
       </form>
+
     </section>
   </main>
 
